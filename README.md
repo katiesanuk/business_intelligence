@@ -5,6 +5,6 @@ Name: Katie Sanuk
 Semester: Fall 2026
 
 Course Topics:
-- Business Intelligence
-- Data Visualization
-- Data Analytics
+- Data Acquisition & Transformation
+- Data Visualization & Communication
+- Exploratory Data Mining
