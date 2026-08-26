@@ -10,9 +10,7 @@ Course Topics:
 * Data Visualization \& Communication
 * Exploratory Data Mining
 
-
-
-\## Tools
+## Tools
 
 * Git
 * GitHub
