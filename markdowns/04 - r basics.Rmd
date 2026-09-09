@@ -1,0 +1,62 @@
+---
+title: "04 - R basics"
+author: "Katie Sanuk"
+date: "2026-09-02"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: TRUE
+    code_folding: show
+    code_download: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+job = list(
+  title   = "Research Data Scientist, Magic Eye",
+  company = "Google",
+  salary  = list(min = 147000, max = 210000)
+)
+str(job)
+
+job[[2]] #company name
+job$company #company name
+job$salary$max #salary max
+job[[3]][[2]] #salary max
+names(job) #names of list
+
+
+crashes_by_day = c(2020, 2241, 2327, 2285, 2380, 1866, 1664)
+names(crashes_by_day) = c("Mon", "Tue", "Wed", "Thu",
+                          "Fri", "Sat", "Sun")
+
+crashes_by_day[2]                      # one position
+crashes_by_day["Fri"]                  # by name
+crashes_by_day[crashes_by_day > 2300]  # by condition
+
+crashes_by_day[c("Wed","Fri")]
+crashes_by_day[c(3,5)]
+crashes_by_day[1:5] # : only works for elements in a row [by their index]
+
+crashes_df = tibble::tibble(
+  day     = names(crashes_by_day),
+  crashes = crashes_by_day,
+  busy    = crashes_by_day > 2000)
+crashes_df$crashes                     # one column, as a vector
+crashes_df[["crashes"]]                # the same vector, by name
+crashes_df[1:2, c("day", "crashes")]   # rows 1 to 2, two columns
+```
+
+```{r csvs}
+oh_jobs = readr::read_csv(
+  file="https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1320&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01"
+)
+oh_jobs_baser=read.csv("https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1320&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01")
+dplyr::glimpse(oh_jobs)
+dplyr::glimpse(oh_jobs_baser)
+
+```
