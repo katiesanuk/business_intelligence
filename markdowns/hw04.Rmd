@@ -1,0 +1,26 @@
+---
+title: "hw04"
+author: "Katie Sanuk"
+date: "2026-09-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+con = DBI::dbConnect(RSQLite::SQLite(), "../data/midwest_airbnb.db")
+listings = DBI::dbReadTable(con, "listings")
+
+nrow(listings)
+sum(listings$city == "Columbus")
+nrow(subset(listings, city == "Columbus"))
+chicago <- subset(listings, city == "Chicago")
+head(chicago[order(chicago$price, decreasing = TRUE), c("name", "price")], 1)
+length(unique(chicago$neighbourhood))
+sum(listings$host_is_superhost == "t", na.rm = TRUE)
+sum(listings$price > 1000, na.rm = TRUE)
+DBI::dbReadTable(con, "listings")
+```
+
