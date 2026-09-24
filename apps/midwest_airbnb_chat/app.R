@@ -33,7 +33,7 @@ ui = page_sidebar(
       tags$ul(
         tags$li("Chicago (snapshot: 2026-07-20)"),
         tags$li("Columbus (snapshot: 2026-07-23)"),
-        tags$li("Twin Cities MSA (snapshot: 2026-07-21)")
+        tags$li("Twin Cities (snapshot: 2026-07-21)")
       )
     )
   )
