@@ -23,11 +23,23 @@ ui = page_sidebar(
   theme   = bs_theme(primary = "#C3142D",
                      base_font = font_google("Lato")),
   sidebar = qc$sidebar(width = 350),
-  card(card_header(textOutput("title")),
-       DT::DTOutput("table")),
-  accordion(open = FALSE,
-            accordion_panel("SQL", verbatimTextOutput("sql")),
-            accordion_panel("About", "Midwest Airbnb Listings; built by Katie Sanuk"))
+  card(
+    card_header(textOutput("title")),
+    DT::DTOutput("table")
+  ),
+  accordion(
+    open = FALSE,
+    accordion_panel(
+      "About",
+      p("Built by Katie Sanuk."),
+      p("Data sourced from Inside Airbnb for three Midwest regions:"),
+      tags$ul(
+        tags$li("Chicago (snapshot: 2026-07-20)"),
+        tags$li("Columbus (snapshot: 2026-07-23)"),
+        tags$li("Twin Cities MSA (snapshot: 2026-07-21)")
+      )
+    )
+  )
 )
 
 server = function(input, output, session) {
