@@ -6,6 +6,14 @@ A twelve-line [querychat](https://github.com/posit-dev/querychat) app built in I
 
 **Live app:** https://midwest-airbnb-chat-z9ji.onrender.com
 
+# 1. Which Columbus neighbourhood has the priciest entire homes?
+![Columbus Priciest Neighbourhoods](screenshots/Question1.png)
+
+# 2. Do superhosts charge more per night than other hosts? Show it as a bar chart.
+![Superhost vs Regular Host Prices Bar Chart](screenshots/Question2.png)
+
+# 3. How many listings could host a party of ten?
+![Listings for Party of Ten](screenshots/Question3.png)
 ---
 
 ## What is this app?
