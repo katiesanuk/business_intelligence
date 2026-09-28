@@ -1,0 +1,68 @@
+---
+title: "Class10"
+author: "Katie Sanuk"
+date: "2026-09-28"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: TRUE
+    code_folding: show
+    code_download: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+robotstxt::paths_allowed(paths = "/courses-instruction/isa/", domain = "bulletin.miamioh.edu", bot = "*")
+```
+
+## Robotstxt
+
+The code chunk below will show the output from the [robotstxt package]() for the ISA course bulletin available at: 
+<https://bulletin.miamioh.edu/courses-instruction/isa/>
+
+
+We are allowed to scrape the website
+```{r}
+robotstxt::paths_allowed(paths = "/wiki/Miami_RedHawks_football", domain = "en.wikipedia.org", bot = "*")
+```
+can't scrape
+```{r}
+robotstxt::paths_allowed(paths = "/jobs/", domain = "https://www.linkedin.com", bot = "*")
+```
+Can scrape
+```{r}
+robotstxt::paths_allowed(paths = "/jobs", domain = "www.indeed.com", bot = "*")
+```
+```{r}
+robotstxt::paths_allowed(paths = "/viewjob", domain = "https://www.indeed.com", bot = "*")
+```
+
+## `rvest` demo: ISA course bulletin
+```{r}
+isa_page_in_r = rvest::read_html("https://bulletin.miamioh.edu/courses-instruction/isa/")
+
+#extract the titles
+#if all titles look the same on the page, it means they have the same tag/class which would allow you to extract them in one step
+#we gpt the selector below by:
+#highlighting course, right clicked and selected inspect, and found part that was flushed containing the title, right clicked and copied selector, saw that output from code below got me the 24th course so I dropped the nth child
+isa_page_in_r |>  
+  rvest::html_elements(
+  "#sc_sccoursedescs > div > p.courseblocktitle > strong"
+)  |> 
+  rvest::html_text2() -> isa_titles
+
+#course descriptions
+#csss selector obtained using the selector gadget
+isa_page_in_r |> 
+  rvest::html_elements(".courseblockdesc") |> 
+  rvest::html_text2() -> isa_descs
+
+isa_df = data.frame(
+  title = isa_titles, description = isa_desc
+)
+```
+
