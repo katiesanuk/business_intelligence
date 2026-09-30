@@ -92,16 +92,4 @@ my_urls = paste0(
 courses_df_from_purrr = purrr::map_df(.x=my_urls, .f = scrape_mu_bulletin)
 ```
 
-## scraping plane crash data
-
-We will use `purrr` based on a class vote. 
-
-```{r}
-year = 2026
-plane_url = paste0("https://www.planecrashinfo.com/", year, "/", year, ".htm")
-
-webpage = rvest::read_html(plane_url)
-webpage |> rvest::html_elements("center > table") |> rvest::html_table()
-
-```
 
