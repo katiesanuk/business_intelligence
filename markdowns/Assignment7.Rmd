@@ -1,0 +1,64 @@
+---
+title: "Assignment 7"
+author: "Katie Sanuk"
+date: "2026-10-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+departments = c(
+  "Accountancy",
+  "Economics",
+  "Entrepreneurship",
+  "Finance",
+  "Information Systems -- Analytics",
+  "Marketing",
+  "Management"
+)
+
+fsb_df = data.frame()
+
+for (dept_name in departments) {
+  
+  dept_url = paste0(
+    "https://miamioh.edu/fsb/directory/?up=/query/all/all/",
+    URLencode(dept_name),
+    "/all"
+  )
+  
+  webpage = rvest::read_html(dept_url)
+  
+  webpage |>
+    rvest::html_elements("td:nth-child(3) > strong > a") |>
+    rvest::html_text2() -> names
+  
+  webpage |>
+    rvest::html_elements("td:nth-child(3) > i") |>
+    rvest::html_text2() -> positions
+  
+  webpage |>
+    rvest::html_elements("td:nth-child(3) > strong > a") |>
+    rvest::html_attr("href") -> websites
+  
+df = data.frame(
+  department = ifelse(
+    dept_name == "Information Systems -- Analytics",
+    "Information Systems & Analytics",
+    dept_name
+  ),
+  name = names,
+  position = positions,
+  website = websites
+)
+  
+  fsb_df = rbind(fsb_df, df)
+}
+
+head(fsb_df)
+```
+
+

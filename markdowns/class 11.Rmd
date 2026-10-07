@@ -47,7 +47,7 @@ for (dept_name in (dept_abbr)) {
   webpage |> rvest::html_elements("strong") |>  rvest::html_text2() -> titles
   webpage |> 
     rvest::html_elements("#sc_sccoursedescs > div > p.courseblockdesc") |> 
-    rvest::html_text2() -> descs
+    rvest::html_text2() -> positions
 
   df = data.frame(title = titles, desc = descs)
   df$title[1] |>  print() #showing only the first course title
