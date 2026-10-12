@@ -1,0 +1,190 @@
+---
+title: "Untitled"
+author: "Katie Sanuk"
+date: "2026-10-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+penguins = readr::read_csv("https://raw.githubusercontent.com/fmegahed/isa401/main/data/penguin_captures.csv")
+penguins$species
+library(readr)
+library(dplyr)
+
+# Load dataset
+penguins <- readr::read_csv("https://raw.githubusercontent.com/fmegahed/isa401/main/data/penguin_captures.csv")
+
+# 1. Total Captures (Rows) — What Grok & OpenAI calculated
+captures_count <- penguins |> 
+  dplyr::count(species, name = "total_captures")
+
+# 2. Unique Penguins (Unit of Analysis = Penguin/Band)
+unique_penguins_count <- penguins |> 
+  dplyr::distinct(species, band) |> 
+  dplyr::count(species, name = "unique_penguins")
+
+# Combine results side-by-side
+dplyr::left_join(unique_penguins_count, captures_count, by = "species") |> 
+  dplyr::arrange(desc(unique_penguins))
+```
+
+```{r}
+ncse_tbl = readr::read_csv("https://raw.githubusercontent.com/fmegahed/isa401/main/data/ncse_endowment_us_and_canada_2025.csv")
+dplyr::glimpse(ncse_tbl)
+```
+
+```{r}
+library(ellmer)
+
+# 1. Create a chat object
+chat = ellmer::chat_openai(
+  model = "gpt-5.6-luna", # note that the API Key that I provided only works with 5.6 luna
+  params = ellmer::params(reasoning_effort = "none")
+)
+
+# 2. Define the Airbnb listing description
+description <- "This one of a kind, turn of the century, fully restored mansion is just waiting for you to come and enjoy the vast amenities this house offers! This historic Victorian Mansion was built in the last 1800's and has been fully restored and updated with one thing in mind--luxury! We boast a slate pool table, 10 person hot tub, a custom made fire table, a built in giant projector screen for streaming, arcade games, and much much more! We comfortably sleep 19 guests with 9 dedicated bedrooms."
+
+# 3. Define the structured output schema
+schema <- ellmer::type_object(
+  property_type = ellmer::type_string(),
+  max_guests = ellmer::type_integer(),
+  num_bedrooms = ellmer::type_integer(),
+  key_amenities = ellmer::type_string(
+    "List key amenities separated by |"
+  )
+)
+
+# 4. Extract structured information
+result <- chat$chat_structured(
+  description,
+  type = schema
+)
+
+# 5. Display results
+print(result)
+```
+
+```{r}
+library(rvest)
+library(dplyr)
+library(readr)
+
+base = "https://isa401-salvage.vercel.app"
+
+# 9 pages covering 360 total wrecks (40 per page)
+starts = seq(from = 1, to = 321, by = 40)
+
+pages = vector("list", length(starts))
+
+for (i in seq_along(starts)) {
+  # Construct exam registry URL
+  pg_url = paste0(base, "/exam/registry?start=", starts[i])
+  pg = rvest::read_html(pg_url)
+  
+  # Extract class and salvage value for all 40 wrecks on the page
+  pages[[i]] = data.frame(
+    class = pg |> 
+      rvest::html_elements("div > ul > li:nth-child(1) > span") |> 
+      rvest::html_text2()
+  )
+  
+  Sys.sleep(1) # Respect robots.txt crawl-delay
+}
+
+# Row-bind all pages into one dataset (360 rows total)
+registry = dplyr::bind_rows(pages)
+
+# Extract single vector of all ship classes
+classes = registry$class
+classes
+# Filter Dreadnoughts and sum total salvage value
+dreadnoughts_df = registry |> 
+  dplyr::filter(class == "Dreadnought")
+
+# Output count & sum
+nrow(dreadnoughts_df)
+sum(dreadnoughts_df$value, na.rm = TRUE)
+```
+
+```{r}
+base = "https://isa401-salvage.vercel.app"
+
+starts = seq(from = 1, to = 321, by = 40)
+
+pages = vector("list", length(starts))
+
+for (i in seq_along(starts)) {
+ pg_url = paste0(base, "/exam/registry?start=", starts[i])
+ pg = rvest::read_html(pg_url)
+
+ pages[[i]] = data.frame( class = pg |>
+ rvest::html_elements("div > ul > li:nth-child(1) > span") |>
+ rvest::html_text2()
+)
+
+Sys.sleep(1)
+}
+
+registry = dplyr::bind_rows(pages)
+
+classes = registry$class
+```
+
+```{r}
+library(httr2)
+
+resp <- request("https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json") |>
+  req_url_query(
+    `$select` = "count(*) AS n",
+    `$where` = "crashdate >= '2026-07-01T00:00:00' AND crashdate < '2026-08-01T00:00:00'"
+  ) |>
+  req_perform() |>
+  resp_body_json()
+
+as.integer(resp[[1]]$n)
+```
+
+```{r}
+library(httr2)
+
+resp <- request("https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json") |>
+  req_url_query(
+    # Count distinct crash IDs rather than total rows
+    `$select` = "count(*) AS records, count(distinct instanceid) AS crashes",
+    `$where` = "crashdate >= '2026-07-01T00:00:00' AND crashdate < '2026-08-01T00:00:00'"
+  ) |>
+  req_perform() |>
+  resp_body_json()
+
+# Extract unique crash count
+
+
+crashes_count <- as.integer(resp[[1]][["crashes"]])
+crashes_count
+records_count <- as.integer(resp[[1]][["records"]])
+```
+
+```{r}
+campus = jsonlite::fromJSON("https://isa401-find-your-seat.vercel.app/campus.json")
+
+names(campus) # shows the named elements within a list (or vector) or the cols in a data frame
+
+campus$Farmer$floors[[2]]$sections
+
+crashes_by_day = c(2020, 2241, 2327, 2285, 2380, "1866", 1664)
+names(crashes_by_day) = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+sum(crashes_by_day > 300)
+```
+
+```{r}
+ncse_tbl = readr::read_csv("https://raw.githubusercontent.com/fmegahed/isa401/main/data/ncse_endowment_us_and_canada_2025.csv")
+dplyr::glimpse(ncse_tbl)
+```
+
