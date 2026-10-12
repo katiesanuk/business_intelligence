@@ -90,16 +90,43 @@ chat = ellmer::chat_openai(
   params=ellmer::params(reasoning_effort="none")
 )
 
-isa125_text = rvest::read_html("https://bulletin.miamioh.edu/courses-instruction/isa/") |>    rvest::html_element("#sc_sccoursesdescs >div:nth-child(1)") |> rvest::html_text2()
+isa125_text = rvest::read_html("https://bulletin.miamioh.edu/courses-instruction/isa/") |> 
+  rvest::html_element("#sc_sccoursedescs > div:nth-child(1)") |> 
+    rvest::html_text2()
 
-chat$chat_structured(
+course_info = chat$chat_structured(
   isa125_text, 
   type = ellmer::type_object(
     name=ellmer::type_string(
       description = "Name of the course. For example, ISA 235.  Information Technology and the Intelligent Enterprise. Do not include the parentheses for the credit hour and do not end with a period"
     ),
-    description = ellmer::type_string(description = "The description of the course without the prereqs.")
+    credit_hours = ellmer::type_integer(description = "Return the credit hours that are listed next to the course number and title in parenthesis.  Please do not include the parentheses in your response."),
+    description = ellmer::type_string(description = "The description of the course without the prereqs."),
+    prereqs = ellmer::type_string("List the information after Prerequisite:")
   )
 )
 ```
+
+```{r}
+chat = ellmer::chat_openai(
+  model = "gpt-5.6-luna",
+  params=ellmer::params(reasoning_effort="none")
+)
+
+course_list = rvest::read_html("https://bulletin.miamioh.edu/courses-instruction/isa/") |> 
+  rvest::html_elements("div.courseblock") |> 
+    rvest::html_text2()  |>  as.list()
+
+  type = ellmer::type_object(
+    name=ellmer::type_string(
+      description = "Name of the course. For example, ISA 235.  Information Technology and the Intelligent Enterprise. Do not include the parentheses for the credit hour and do not end with a period"
+    ),
+    credit_hours = ellmer::type_integer(description = "Return the credit hours that are listed next to the course number and title in parenthesis.  Please do not include the parentheses in your response."),
+    desc = ellmer::type_string(description = "The description of the course without the prereqs."),
+    prereqs = ellmer::type_string("List the information after Prerequisite:")
+  )
+
+  isa_df = ellmer::parallel_chat_structured(chat, prompts = course_list, type = type, include_tokens = T, include_cost=T)
+```
+
 
