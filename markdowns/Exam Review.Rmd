@@ -1,0 +1,695 @@
+---
+title: "Exam reviews"
+author: "Katie Sanuk"
+date: "2026-10-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Class 3
+
+```{r cincy_crashes}
+crashes_per_day = 30125 / 365
+crashes_per_day 
+
+crashes_by_day = c(2020, 2241, 2327, 2285,
+                   2380, 1866, 1664)   #creating a vector
+names(crashes_by_day) = c("Mon", "Tue", "Wed", "Thu",
+                          "Fri", "Sat", "Sun")  #creating names to the vector
+crashes_by_day
+
+crashes_by_day > 2100 #return T/F
+```
+
+```{r typeof_vec}
+typeof(crashes_by_day)
+
+crashes_by_day_int = c(2020L, 2241L, 2327L, 2285L, 2380L, 1866L, 1664L) #use L to change to int
+names(crashes_by_day_int) = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+typeof(crashes_by_day_int)  #vector is now int instead of double
+
+```
+
+## Class 4, opening pepper shaker 
+
+```{r activity01} 
+job = list(title   = "Research Data Scientist, Magic Eye",
+  company = "Google", salary  = list(min = 147000, max = 210000) ) #creating a list
+
+# 1. The company name.
+company = job[[2]] # if you were to use one sq bracket, job[2]
+#one bracket to get container, 2 to open container
+company_alt = job$company #$ replaces 2 brackets
+
+# 2. The maximum salary.
+max_salary = job$salary$max #look into list to see how many containers
+
+# 3. The maximum salary again, using only [[ ]].
+max_salary_alt = job[[3]][[2]] #third list, second list in third
+
+job['salary']$salary$max
+
+# 4. The names of the elements in job.
+names(job)
+
+```
+
+# subsetting a vector
+
+```{r subset_vec}
+crashes_by_day = c(2020, 2241, 2327, 2285, 2380, 1866, 1664)
+names(crashes_by_day) = c("Mon", "Tue", "Wed", "Thu",
+                          "Fri", "Sat", "Sun")
+
+crashes_by_day[c("Wed","Fri")] # pulling elements by their name
+crashes_by_day[c(3,5)]
+
+crashes_by_day[1:5] # : only works for elements in a row [by their index]
+crashes_by_day[] # returns all the elements --> no diff than crashes_by_day
+```
+
+## importing data
+
+```{r csvs}
+oh_jobs = readr::read_csv(
+  file="https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1140&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01"
+) #csv use url
+
+oh_jobs_baser= read.csv("https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1140&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01")
+
+dplyr::glimpse(oh_jobs) #gives dates as date
+dplyr::glimpse(oh_jobs_baser)  #gives dates as character
+```
+
+## Class 5
+
+```{r game01}
+campus = jsonlite::fromJSON("https://isa401-find-your-seat.vercel.app/campus.json")
+
+names(campus) # shows the named elements within a list (or vector) or the cols in a data frame
+
+fsb = campus$Farmer # saving the named farmer list in FSB
+# equivalent campus[['Farmer']] by name or campus[[5]] by position
+fsb$code
+
+fsb[[8]]$`2`$sections
+
+sec_floor = fsb[[8]]$`2`
+
+sec_floor_rooms = sec_floor[[3]]
+sec_floor_rooms[6, 2]
+sec_floor_rooms[6, 'isa_sections']
+```
+
+# readinge excel files
+
+```{r occupations}
+occupation = readxl::read_excel(
+  path = "../data/occupation.xlsx",  #will always be the path
+  sheet = 5, # sheet = "Table 1.4"
+  skip = 1
+)
+# - when you subset in R drops these specific things
+# given that they are three, I put them in a vector
+# notice the "," after the parantheses
+# nothing after the comma which means all columns
+# instead of that space --> 1:7
+occupation = occupation[-c(32,33,34), ]
+# alternatively
+occupation = occupation[1:31, ]
+```
+
+#read json data
+```{r read_json}
+json_url = "https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json?$limit=100"
+crashes_json = jsonlite::fromJSON(json_url)
+dplyr::glimpse(crashes_json)  #gives summary of data always
+```
+
+## Class 7 sql
+```{r}
+con = DBI::dbConnect(RSQLite::SQLite(), "../data/scout.db")
+postings = DBI::dbReadTable(con, "scout_postings") |> tibble::as_tibble()
+DBI::dbDisconnect(con)  ##setting up for sql
+
+jobs = postings |> 
+  dplyr::select(company, location_state, remote, posted_at, last_seen_at) |>
+  dplyr::filter(remote == 1) |>
+  dplyr::mutate(
+    posted_at = as.Date(posted_at),  #changing data types
+    last_seen_at = as.Date(last_seen_at),
+    days_open = as.numeric(last_seen_at - posted_at)
+    )
+
+con = DBI::dbConnect(RSQLite::SQLite(), "../data/scout.db")
+postings = DBI::dbReadTable(con, "scout_postings") |> tibble::as_tibble()
+DBI::dbDisconnect(con)
+
+jobs = postings |>
+  dplyr::select(company, title, location_state, remote, category, posted_at, last_seen_at) |>
+  dplyr::mutate(dplyr::across(dplyr::ends_with("_at"), as.Date),
+                days_open = as.numeric(last_seen_at - posted_at))
+
+jobs
+
+# Q1 -- which cat is remote friendly
+# To answer that, the logic would be as follows"
+# - Find the number of jobs per category
+# - Normalize the number of remote jobs by dividing by the total jobs
+
+
+jobs |> 
+  # I want to move from unit of analysis being a job posting to a category
+  dplyr::group_by(category) |> 
+  dplyr::summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote)
+  )
+
+# Among full-time postings, which states have the highest remote share
+# Based on the vote in class, I will deviate from the answer in the slide 
+# by showing the combination of category and state -- this will still give you the answer you want
+
+jobs |> 
+  dplyr::group_by(category, location_state) |> 
+  dplyr::summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote) |> round(digits = 2)
+  ) |> 
+  dplyr::arrange(dplyr::desc(remote_share)) |> 
+  na.omit() # to drop the location_state == NA and any other rows that contain NA
+
+# Notes logic
+jobs |> 
+  dplyr::filter(category == 'fulltime') |> 
+  dplyr::group_by(location_state) |> 
+  dplyr::summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote) |> round(digits = 2)
+  ) |> 
+  dplyr::arrange(dplyr::desc(remote_share)) |> 
+  na.omit()
+```
+
+#airbnb
+
+```{r}
+con = DBI::dbConnect(RSQLite::SQLite(), "../data/midwest_airbnb.db")
+listings = DBI::dbReadTable(con, "listings") |>
+  tibble::as_tibble()
+DBI::dbDisconnect(con)
+dplyr::glimpse(listings)
+
+# 1. How many listings per city?
+## If the answer is purely based on last class, I can group by city and then count the number of listing in each city
+
+listings |> dplyr::group_by(city) |>   dplyr::summarise(count = dplyr::n())
+# alternatively, the short cut for the code above
+listings |> dplyr::count(city) # count does group by and then n()
+# the other option is to simply count the number of times each city occurred in the col city
+table(listings$city) # returns a named vector vs above we get a data.frame/tibble
+
+# 2. For entire homes (room_type == "Entire home/apt") that sleep four or more, what is the median price in each city?
+listings |> 
+  dplyr::filter(
+    room_type == "Entire home/apt" & accommodates >= 4
+  ) |> 
+  dplyr::group_by(city) |> 
+  dplyr::summarise(
+    median_price = median(price)
+  ) -> q2
+q2
+
+#  Q3: Add price_per_person = price / accommodates. Which three listings are cheapest per person? Believe them?
+
+listings |> 
+  dplyr::mutate(price_per_person = price / accommodates) |> 
+  # for the sake of printing nicely, I will reduce the number of cols
+  dplyr::select(city, host_name, name, price, accommodates, price_per_person) |> 
+  dplyr::arrange(price_per_person) |> 
+  head(3)
+
+# Which five host_names have the most listings? [FYI -- host names are not unique]
+# host_ids are
+
+listings |> dplyr::count(host_name, sort = T)
+
+# the line below groups by both host_name and host_id (to attempt to find unique hosts) -- this is the gist of the question but both answers would have been considered correct on an exam given the way I framed the question
+listings |> dplyr::count(host_name, host_id, sort = T)
+```
+
+##class 8 requesting an api
+
+```{r slide08}
+httr2::request("https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json") |>
+  httr2::req_url_query("$limit" = 5) |>   
+  httr2::req_perform() |>
+  httr2::resp_body_string() |>
+  jsonlite::fromJSON()
+```
+
+```{r fred}
+ohio_jobs = 
+  httr2::request("https://api.stlouisfed.org/fred/series/observations") |>
+  httr2::req_url_query(
+    series_id = "IHLIDXUSOH",
+    api_key = Sys.getenv("FRED_API_KEY"),
+    file_type = "json"
+  ) |>
+  # nothing has been sent yet
+  httr2::req_perform() |>
+  httr2::resp_body_string() |>
+  jsonlite::fromJSON()
+
+dplyr::glimpse(ohio_jobs)
+
+ohio_df = ohio_jobs$observations # we saw that the data is in observations
+
+dplyr::glimpse(ohio_df)
+
+# another approach to filter the dates would be:
+ohio_df |> 
+  # overwrite the date col and convert to date (from chr)
+  dplyr::mutate(date = lubridate::ymd(date)) |> 
+  # bec it is a date, we can do logical checks on it and keep dates from sep 01, 2026
+  dplyr::filter(date >= '2026-09-01') -> ohio_df_sept_2026
+
+```
+
+```{r usajobs}
+httr2::request("https://data.usajobs.gov/api/search") |>
+  httr2::req_url_query(Keyword = "Data Analyst", ResultsPerPage = 500) |>
+  httr2::req_headers(
+    Host = "data.usajobs.gov",
+    "User-Agent" = "fmegahed@miamioh.edu",
+    "Authorization-Key" = Sys.getenv("USAJOBS_API_KEY")
+  ) |>
+  httr2::req_perform() |> 
+  httr2::resp_body_string() |> 
+  jsonlite::fromJSON(flatten = T) -> usa_jobs_data
+
+
+usa_jobs_df = usa_jobs_data$SearchResult$SearchResultItems
+
+jobs_small = usa_jobs_df |>
+  dplyr::select(
+    title = MatchedObjectDescriptor.PositionTitle,
+    department = MatchedObjectDescriptor.DepartmentName,
+    agency = MatchedObjectDescriptor.OrganizationName,
+    location = MatchedObjectDescriptor.PositionLocationDisplay,
+    closes = MatchedObjectDescriptor.ApplicationCloseDate
+  )
+
+## Easy way -- since we looked for data analyst as a key word
+nrow(jobs_small)
+# q 2
+table(jobs_small$department) |> sort(decreasing = T) |> head(3)
+jobs_small |> dplyr::count(department) |> 
+  dplyr::arrange(dplyr::desc(n)) |> head(3)
+
+## The harder way (but being literal)
+jobs_small |> dplyr::filter(title == 'Data Analyst') -> count_literal
+
+count_literal |> dplyr::count(department) |> dplyr::arrange(dplyr::desc(n))
+
+## the harder way (without being literal)
+# Jesse -> Data Analyst or Data Analytics side-by-side
+index_data_analyst = jobs_small$title |> 
+  stringr::str_detect("Data Analytics|Data Analyst")
+
+# given that this is a true or fale type result
+# true rows will be kept
+# , nothing means keep all columns
+count_jesse_standard = jobs_small[index_data_analyst , ]
+count_jesse_standard  |> dplyr::count(department) |> dplyr::arrange(dplyr::desc(n))
+```
+
+## class 10 web scraping
+
+```{r bulletin1}
+robotstxt::paths_allowed(
+  paths = "courses-instruction/isa/",
+  domain="https://bulletin.miamioh.edu/"
+)  #true means we are allowed to scrape it
+
+# In some cases, the robotstxt provides inconsistent answers
+# typically, you get a warning with the answer that is incorrect
+# solution: drop the trailing slash from the URL
+# even better check with the robots.txt (which is the ground truth)
+robotstxt::paths_allowed(
+  paths = "/jobs/", domain = "www.linkedin.com"
+    )
+```
+
+# example
+
+```{r web scraping}
+# checking whether we are allowed to scrape this info
+# This was done above and found to be TRUE
+
+# I will load the backend of the HTML into R using
+# [a] rvest::read_html() | sometimes rvest::read_html_live() if the page has some dynamic content
+# [b] in some cases, we will craft this as a request as shown in slides httr2::request() > .... > httr2::resp_body_html()
+isa_courses_in_r = rvest::read_html("https://bulletin.miamioh.edu/courses-instruction/isa/")
+
+# we will extract the course titles, which we can do in a single pipeline
+# given that they look the same on the rendered web page in Chrome
+# (bolded, same font size and same font type)
+
+# CSS selector was obtained by:
+# [a] highlighting what we wanted to pull (ISA 401 course title) in Chrome -> right click
+#  inspect -> right click > copy -> copy selector
+# [b] from this specific example, we were able to get just the title for ISA 401
+# because we had `:nth-child(24)` -> if you were to drop it --> you get all the course titles
+isa_courses_in_r |> 
+  rvest::html_elements("#sc_sccoursedescs > div > p.courseblocktitle > strong") |> 
+  rvest::html_text2() -> isa_titles
+  
+# course descriptions [using selector gadget, which does not always work]
+# but when it works it is easier
+
+isa_courses_in_r |> 
+  rvest::html_elements(".courseblockdesc") |> 
+  rvest::html_text2() -> isa_desc
+
+df = data.frame(title = isa_titles, description = isa_desc)
+```
+
+## class 11 scraping multiple pages
+
+```{r bulletin}
+dept_abbrv = c('acc', 'bus', 'isa', 'mkt')
+#use for loop
+courses_df = data.frame() # initializing a container to store stuff in from the loop
+for (abbrv in dept_abbrv) {
+  cat( rep("-", 50) , "\n" )
+  print(abbrv)
+  bulletin_url = paste0(
+    'https://bulletin.miamioh.edu/courses-instruction/', abbrv, '/'
+  )
+  
+  # Q: Why did Fadel make this an R object instead of a string like last class?
+  # [a] we did this so we can reuse the rest of our code with only changing the URL
+  webpage = rvest::read_html(bulletin_url)
+  
+  webpage |> rvest::html_elements("strong") |> rvest::html_text2() -> titles
+  webpage |> rvest::html_elements("p.courseblockdesc") |> rvest::html_text2() -> descs
+  
+  df = data.frame(title = titles, desc = descs)
+  print(df$title[1:2])
+  courses_df = rbind(courses_df, df)
+}
+
+
+```
+
+```{r purrr}
+dept_abbrv = c('acc', 'bus', 'isa', 'mkt')
+
+# This function takes an abbrv as an input and returns a data_frame as an output
+scrape_mu_bulletin = function(abbrv){
+  bulletin_url = paste0(
+    'https://bulletin.miamioh.edu/courses-instruction/', abbrv, '/'
+  )
+  
+  # Q: Why did Fadel make this an R object instead of a string like last class?
+  # [a] we did this so we can reuse the rest of our code with only changing the URL
+  webpage = rvest::read_html(bulletin_url)
+  
+  webpage |> rvest::html_elements("p.courseblocktitle") |> rvest::html_text2() -> titles
+  webpage |> rvest::html_elements("p.courseblockdesc") |> rvest::html_text2() -> descs
+  
+  df = data.frame(title = titles, desc = descs)
+  return(df)
+}
+
+test = scrape_mu_bulletin(abbrv = 'eco')
+
+# to use functions from purrr, we will use a map_*(), or map2_*(), or a pmap_*()
+# map uses a function that takes a single input (or you are only changing a single input)
+# map2 uses a function that takes two inputs
+# pmap >=3
+# after the _, you put the type of object you are getting back
+
+# the .x is the vector that we will iterate over
+# and the .f is the function we use
+
+courses_df_from_purrr = purrr::map_df(.x = dept_abbrv, .f = scrape_mu_bulletin)
+```
+
+```{r}
+year = 2025
+
+crash_url = paste0('https://www.planecrashinfo.com/', year, '/', year, '.htm')
+
+crash_page <- rvest::read_html(crash_url, encoding = "ISO-8859-1")
+
+# This should now print without the error
+crash_page
+
+# How many <table> elements are on the page?
+crash_tables <- crash_page |>
+  rvest::html_elements("table") |>
+  rvest::html_table()
+
+crash_df = crash_tables[[1]]
+
+# From a cleaning perspective, there are several things that can be changed:
+# [1] Replace the colnames with the first row
+# [2] Have better column types (e.g., Date being a date instead of chr)
+# [3] There are possible things you can do to clean the data within columns; e.g., split columns that contain multiple pieces of information
+# Column 4 has: fatalities/# passengers (ground fatalities)
+
+# for today's class, we will focus on the first two
+colnames(crash_df) = crash_df[1, ]
+# then delete first row
+crash_df = crash_df[-1, ]
+
+crash_df = crash_df |> 
+  # converts date into a date object
+  dplyr::mutate(Date = lubridate::dmy(Date))
+
+head(crash_df)
+
+```
+
+```{r game}
+page = rvest::read_html("https://isa401-salvage.vercel.app/registry?start=1")
+classes = page |>
+  rvest::html_elements(".Dreadnought") |>
+  rvest::html_text2()
+length(classes)  
+
+# From clicking on the site, we saw that our page changes by 50
+
+
+base = "https://isa401-salvage.vercel.app"
+starts = seq(from = 1, to = 351, by = 50)
+pages = vector("list", length(starts))
+for (i in seq_along(starts)) {
+  pg = rvest::read_html(paste0(base, "/registry?start=", starts[i]))
+  pages[[i]] = data.frame(
+    class = pg |> rvest::html_elements("div > ul > li:nth-child(1) > span") |> rvest::html_text2(),
+    value = pg |> rvest::html_elements("span.salvage-value") |> rvest::html_text2() |> stringr::str_remove(" MCr")
+  )
+  Sys.sleep(1)   # robots.txt asks for it
+}
+registry = dplyr::bind_rows(pages)   # 400 rows?
+
+registry |> dplyr::filter(class == "Dreadnought") |> 
+  dplyr::mutate(value = as.numeric(value)) -> Dreadnoughts_df
+
+sum(Dreadnoughts_df$value)
+
+```
+
+## Class 12 structured text extraction
+
+```{r courses}
+chat = ellmer::chat_openai(
+  model = "gpt-5.6-luna", # note that the API Key that I provided only works with 5.6 luna
+  params = ellmer::params(reasoning_effort = "none")
+)
+
+isa125_text = rvest::read_html("https://bulletin.miamioh.edu/courses-instruction/isa/") |> 
+  # for this example, only the first course
+  rvest::html_elements("#sc_sccoursedescs > div:nth-child(1)") |> rvest::html_text2()
+
+
+course_info = chat$chat_structured(
+  isa125_text,
+  type = ellmer::type_object(
+    name = ellmer::type_string(
+      description = "Name of the course. For example, ISA 235. Information Technology and the Intelligent Enterprise. Do not include the parantheses for the credit hour and do not end with a period"
+    ),
+   description = ellmer::type_string(description = "The description of the course without the prereqs."),
+   prereqs = ellmer::type_string("List the information after Prerequisite:")
+  )
+)
+
+```
+
+## Class 13 Tidying and Having Technically Correct Data from the PlaneCrash Info Site
+
+```{r crashes}
+year = 2025
+
+crash_url = paste0('https://www.planecrashinfo.com/', year, '/', year, '.htm')
+
+# the encoding came from chatisa as shown in class 12
+crash_page <- rvest::read_html(crash_url, encoding = "ISO-8859-1")
+
+crash_page |> 
+  # selector from inspector (kept the last three parts of the selector)
+  # note the output (we also dropped :nth-child(8) in tr since we want all rows)
+  rvest::html_elements("tr > td:nth-child(1) > font") |> 
+  rvest::html_text2() -> date_col
+
+crash_page |> 
+  # repeat for location_operator
+  rvest::html_elements("tr > td:nth-child(2) > font") |> 
+  rvest::html_text2() -> location_operator
+
+crash_page |> 
+  # repeat for aircraft_reg
+  rvest::html_elements("tr > td:nth-child(3) > font") |> 
+  rvest::html_text2() -> aircraft_reg
+
+crash_page |> 
+  # repeat for fatalities
+  rvest::html_elements("tr > td:nth-child(4) > font") |> 
+  rvest::html_text2() -> fatalities
+
+# note that the number elements in the four vectors are not equal
+df = data.frame(
+  date_col = date_col, 
+  # -1 drops the first row that had the col header
+  location_operator = location_operator[-1],
+  aircraft_reg = aircraft_reg[-1],
+  fatalities = fatalities[-1]
+)
+
+# make this tidy
+
+df |> 
+  tidyr::separate(col = location_operator, into = c("location", "operator"), sep = "\n") |> 
+  tidyr::separate(col = aircraft_reg, into = c("aircraft", "registeration"), sep = "\n") |> 
+  tidyr::separate(col = fatalities, into = c("air_fatalities", "num_pass", "ground_fatalities")) -> tidy_df
+```
+
+## Practice exam
+
+
+```{r scrape allowed}
+robotstxt::paths_allowed(
+  paths = "wiki/Miami_University",
+  domain="https://en.wikipedia.org/"
+)
+```
+
+```{r simple scrape}
+'https://miamioh.edu/policy-library/students/undergraduate/academic-regulations/index.html' |> 
+  rvest::read_html() |> 
+  rvest::html_elements('a.news-lockup__body-link') |> 
+  rvest::html_attr(name = 'href') |> 
+  # optional to make absolute URLs instead of partials
+  rvest::url_absolute('https://miamioh.edu/policy-library/') -> mu_policies
+
+mu_policies
+```
+
+```{r another scrape}
+url = "https://miamiredhawks.com/sports/swimming-and-diving/roster"
+roster = rvest::read_html(url)
+
+names_vec = roster |> rvest::html_elements(" div > a > h3") |>  rvest::html_text2()
+lcoation = roster |>  rvest::html_elements("span.s-person-card__content__person__location-item.flex.items-center") |> rvest::html_text2()
+
+swim_df = data.frame(name = names_vec[1:52],  location = lcoation)
+swim_df
+```
+
+
+```{r complex API Request}
+toxic_ips = readr::read_csv("../data/toxic_ips_oct2025.csv")
+
+ip_addresses = toxic_ips$IP
+
+x = ip_addresses[1]
+
+ip_api = function(x){
+  paste0(
+    "http://ip-api.com/json/", x,
+    "?fields=status,message,continent,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,currency,isp,org,as,query") |> 
+    jsonlite::fromJSON() -> response
+  
+  response |> as.data.frame() -> df
+  
+  return(df)
+}
+
+ip_df = purrr::map_df(.x = ip_addresses, .f = ip_api)
+
+ip_df |> tibble::tibble() # so it prints better
+```
+
+```{r grid}
+naples_grid <- #simple version
+  httr2::request("https://api.weather.gov/points/26.1423,-81.7960")  |> 
+  httr2::req_perform() |> 
+  httr2::resp_body_string() |> 
+  jsonlite::fromJSON()
+
+naples_grid$properties$gridX
+```
+
+```{r}
+library(rvest)
+library(dplyr)
+library(stringr)
+
+# Read the HTML page
+page <- rvest::read_html("https://realpython.github.io/fake-jobs/")
+
+# 1. Extract each element one at a time using corrected CSS selectors
+title <- page |> 
+  rvest::html_elements("div.card-content h2.title") |> 
+  rvest::html_text2()
+
+company <- page |> 
+  rvest::html_elements("div.card-content h3.company") |> 
+  rvest::html_text2()
+
+location <- page |> 
+  rvest::html_elements("div.card-content p.location") |> 
+  rvest::html_text2()
+
+date_posted <- page |> 
+  rvest::html_elements("div.card-content time") |> 
+  rvest::html_text2()
+
+apply_link <- page |> 
+  rvest::html_elements("footer.card-footer a:nth-child(2)") |> 
+  rvest::html_attr("href")
+
+# Combine the individual 100-length vectors into a data frame
+fake_jobs_df <- tibble(
+  title = title,
+  company = company,
+  location = location,
+  date_posted = date_posted,
+  apply_link = apply_link
+)
+
+# 2. Count job titles containing "Python"
+python_jobs_count <- sum(stringr::str_detect(title, stringr::regex("Python", ignore_case = TRUE)))
+
+# View output
+dplyr::glimpse(fake_jobs_df)
+print(python_jobs_count)
+```
+

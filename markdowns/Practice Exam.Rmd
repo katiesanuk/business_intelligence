@@ -1,0 +1,233 @@
+---
+title: "exam practice"
+author: "Katie Sanuk"
+date: "2026-10-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+hip = jsonlite::fromJSON("data/hibp_data.json")
+hip$BreachName[500]
+
+sum(stringr::str_detect(hip$Email, "miamioh\\.edu"))
+```
+
+```{r}
+robotstxt::paths_allowed(
+  paths = "wiki/Miami_University",
+  domain="https://en.wikipedia.org/"
+)
+```
+
+```{r}
+'https://miamioh.edu/policy-library/students/undergraduate/academic-regulations/index.html' |> 
+  rvest::read_html() |> 
+  rvest::html_elements('a.news-lockup__body-link') |> 
+  rvest::html_attr(name = 'href') |> 
+  # optional to make absolute URLs instead of partials
+  rvest::url_absolute('https://miamioh.edu/policy-library/') -> mu_policies
+
+mu_policies
+```
+
+```{r}
+url = "https://miamiredhawks.com/sports/swimming-and-diving/roster"
+roster = rvest::read_html(url)
+
+names_vec = roster |> rvest::html_elements(" div > a > h3") |>  rvest::html_text2()
+lcoation = roster |>  rvest::html_elements("span.s-person-card__content__person__location-item.flex.items-center") |> rvest::html_text2()
+
+swim_df = data.frame(name = names_vec[1:52],  location = lcoation)
+swim_df
+```
+
+```{r}
+library(httr2)
+library(jsonlite)
+
+naples_grid <- 
+  httr2::request("https://api.weather.gov/points/26.1423,-81.7960") |> 
+  httr2::req_headers(
+    `User-Agent` = "(MyWeatherApp, contact@example.com)"
+  ) |> 
+  # nothing has been sent yet
+  httr2::req_perform() |> 
+  httr2::resp_body_string() |> 
+  jsonlite::fromJSON()
+
+# Extract the properties object
+grid_properties <- naples_grid$properties
+
+# View key grid parameters
+cat("Grid ID:", grid_properties$gridId, "\n")
+cat("Grid X: ", grid_properties$gridX, "\n")
+cat("Grid Y: ", grid_properties$gridY, "\n")
+cat("Forecast URL:", grid_properties$forecast, "\n")
+```
+
+
+```{r}
+# 1. Read the CSV file
+toxic_ips <- read_csv("data/toxic_ips_oct2025.csv")
+
+# 2. Query each IP using the exact httr2 pipeline structure from your notes
+ip_df <- map_dfr(toxic_ips$IP, function(ip_addr) {
+  httr2::request(paste0("http://ip-api.com/json/", ip_addr)) |>
+    httr2::req_url_query(
+      fields = "status,continent,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,currency,isp,org,as,query"
+    ) |>
+    httr2::req_perform() |>
+    httr2::resp_body_string() |>
+    jsonlite::fromJSON()
+})
+
+dplyr::glimpse(ip_df)
+```
+
+```{r}
+ntse_tbl = readr::read_csv('data/ntse_endowment_us_and_canada_2020.csv')
+dplyr::glimpse(ntse_tbl)
+
+lst = list( 
+  gdp = data.frame(year = c(2020, 2021, 2022), values = c(19200, 20500, 21300), units = "USD billions" ),
+  population = list(country = "United States", year = c(2020, 2021, 2022), values = c(325, 331, 335), units = "millions"),
+  indicators = c("gdp", "population", "inflation"), # Available indicators
+  inflation_rate = 3.2 # Latest inflation rate as a single value
+)
+
+```
+
+```{r}
+naples_grid <- #simple version
+  httr2::request("https://api.weather.gov/points/26.1423,-81.7960")  |> 
+  httr2::req_perform() |> 
+  httr2::resp_body_string() |> 
+  jsonlite::fromJSON()
+
+naples_grid$properties$gridX
+```
+
+```{r}
+library(rvest)
+library(dplyr)
+library(stringr)
+
+# Read the HTML page
+page <- rvest::read_html("https://realpython.github.io/fake-jobs/")
+
+# 1. Extract each element one at a time using corrected CSS selectors
+title <- page |> 
+  rvest::html_elements("div.card-content h2.title") |> 
+  rvest::html_text2()
+
+company <- page |> 
+  rvest::html_elements("div.card-content h3.company") |> 
+  rvest::html_text2()
+
+location <- page |> 
+  rvest::html_elements("div.card-content p.location") |> 
+  rvest::html_text2()
+
+date_posted <- page |> 
+  rvest::html_elements("div.card-content time") |> 
+  rvest::html_text2()
+
+apply_link <- page |> 
+  rvest::html_elements("footer.card-footer a:nth-child(2)") |> 
+  rvest::html_attr("href")
+
+# Combine the individual 100-length vectors into a data frame
+fake_jobs_df <- tibble(
+  title = title,
+  company = company,
+  location = location,
+  date_posted = date_posted,
+  apply_link = apply_link
+)
+
+# 2. Count job titles containing "Python"
+python_jobs_count <- sum(stringr::str_detect(title, stringr::regex("Python", ignore_case = TRUE)))
+
+# View output
+dplyr::glimpse(fake_jobs_df)
+print(python_jobs_count)
+```
+
+```{r}
+lst = list( 
+  gdp = data.frame(year = c(2020, 2021, 2022), values = c(19200, 20500, 21300), units = "USD billions" ),
+  population = list(country = "United States", year = c(2020, 2021, 2022), values = c(325, 331, 335), units = "millions"),
+  indicators = c("gdp", "population", "inflation"), # Available indicators
+  inflation_rate = 3.2 # Latest inflation rate as a single value
+)
+
+typeof(lst[[2]])
+
+hip = jsonlite::fromJSON("../data/hibp_data.json")
+hip$BreachName[500]
+print(hip |> dplyr::select(Email) |>  dplyr::filter(stringr::str_detect(Email, "miamioh\\.edu$")) |> nrow())
+
+robotstxt::paths_allowed(path = "/wiki/Miami_University", domain = "https://en.wikipedia.org/")
+
+url <- "https://miamioh.edu/policy-library/students/undergraduate/academic-regulations/index.html"
+page <- rvest::read_html(url)
+links <- page |>
+rvest::html_elements("main a, .content a,div[id*='card'] a") |>
+rvest::html_attr("href")
+mu_policies <- xml2::url_absolute(links, base = url) |>
+unique()
+mu_policies
+
+urlswim <- "https://miamiredhawks.com/sports/swimming-and-diving/roster"
+swim_page <- rvest::read_html(urlswim)
+cards <- swim_page |> 
+  rvest::html_elements("div.s-person-card")
+name <- cards |> 
+  rvest::html_element("h3") |> 
+  rvest::html_text2()
+location <- cards |> 
+  rvest::html_element(".s-person-card__content__person__location-item") |> 
+  rvest::html_text2()
+swim_df <- tibble::tibble(
+  name = name,
+  location = location
+) |> 
+  dplyr::filter(!is.na(location) & location != "")
+swim_df
+
+naples_geo <- httr2::request("https://api.weather.gov/points/26.1420,-81.7948") |> 
+  httr2::req_headers("User-Agent" = "MiamiOH_ISA401/1.0 (student@miamioh.edu)") |> 
+  httr2::req_perform() |> 
+  httr2::resp_body_string() |> 
+  jsonlite::fromJSON()
+gridX <- naples_geo$properties$gridX
+print(gridX)
+
+toxic_ips <- readr::read_csv("../data/toxic_ips_oct2025.csv")
+fields_list <- "status,continent,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,currency,isp,org,as,query"
+ip_df <- purrr::map_dfr(toxic_ips$IP, function(ip_addr) {
+  resp <- httr2::request("http://ip-api.com/json/") |> 
+    httr2::req_url_path_append(ip_addr) |> 
+    httr2::req_url_query(fields = fields_list) |> 
+    httr2::req_perform()
+  res_json <- resp |> 
+    httr2::resp_body_string() |> 
+    jsonlite::fromJSON()
+  
+  as.data.frame(res_json)
+})
+dplyr::glimpse(ip_df)
+
+# reading the data from my github repo to avoid an issues with file location
+ntse_tbl = readr::read_csv('../data/ntse_endowment_us_and_canada_2020.csv')
+
+# a glimpse of the data
+# for this analysis, do NOT convert chr to factors (do not worry about this)
+dplyr::glimpse(ntse_tbl)
+```
+
+
