@@ -40,4 +40,78 @@ arules::inspect(skill_rules)
  
 arules::sort(skill_rules, by = 'lift', decreasing = TRUE)[1:3] |> arules::inspect()
 ```
+```{r}
+# internal to arulesViz, hence the :::
+arulesViz:::plot.rules(skill_rules,
+  measure = c('support', 'lift'),
+  shading = 'confidence')
+```
+```{r}
+# top 5 rules by lift, as a graph
+skill_rules |>
+  arules::head(n = 5, by = 'lift') |>
+  arulesViz:::plot.rules(method = 'graph')
+```
+
+
+```{r}
+skills = readr::read_csv(paste0(
+  'https://raw.githubusercontent.com/fmegahed/isa401/main/data/',
+  'class25_job_skills_2026-11-15.csv'))
+ 
+skills # one row per posting and skill
+```
+```{r}
+dplyr::n_distinct(skills$posting_id) # number of postings
+```
+```{r}
+top30 = skills |> dplyr::count(skill, sort = TRUE) |> dplyr::slice_head(n = 30)
+ 
+# one row per posting, a 0/1 column for each of the top 30 skills
+postings = skills |>
+  dplyr::filter(skill %in% top30$skill) |>
+  dplyr::distinct(posting_id, skill) |>
+  dplyr::mutate(has = 1) |>
+  tidyr::pivot_wider(names_from = skill, values_from = has, values_fill = 0)
+ 
+x = postings |> dplyr::select(-posting_id) # the input to k-means: no label, no id
+ 
+x[1:4, 1:6]
+```
+```{r}
+set.seed(2026)
+km_res_nbclust = NbClust::NbClust(
+  data = x,
+  distance = "euclidean",
+  min.nc = 2, max.nc = 8,
+  method = "kmeans", index ="all") # about a minute
+ 
+table(km_res_nbclust$Best.partition) # postings per cluster
+```
+
+```{r}
+factoextra::fviz_cluster(
+  object =
+    list(
+      cluster = km_res_nbclust$Best.partition,
+      data = x
+    ),
+  geom = "point",
+  ellipse.type = "convex",
+  palette = "jco",
+  ggtheme = ggplot2::theme_minimal()
+)
+```
+```{r}
+# NbClust's clusters, saved with each posting's title, company, location, link and skills
+clusters = readr::read_csv(paste0(
+  'https://raw.githubusercontent.com/fmegahed/isa401/main/data/',
+  'class26_job_clusters_2026-11-15.csv'))
+ 
+clusters |> dplyr::count(cluster) # postings per cluster
+ 
+clusters |> # the jobs in one cluster; change 1 to see the others
+  dplyr::filter(cluster == 1) |>
+  dplyr::select(title, company, apply_url)
+```
 
